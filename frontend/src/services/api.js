@@ -5,12 +5,15 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 export const useSetuAPI = () => {
     const { getToken, isSignedIn } = useAuth()
 
-    const createTask = async (description, priority = 'medium') => {
+    const createTask = async (description, priority = 'medium', service = null) => {
         if (!isSignedIn) {
             throw new Error('User must be signed in to create tasks')
         }
 
         const token = await getToken()
+
+        const body = { description, priority }
+        if (service) body.service = service
 
         const response = await fetch(`${API_BASE_URL}/api/v1/tasks/create`, {
             method: 'POST',
@@ -18,10 +21,7 @@ export const useSetuAPI = () => {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({
-                description,
-                priority
-            })
+            body: JSON.stringify(body)
         })
 
         if (!response.ok) {

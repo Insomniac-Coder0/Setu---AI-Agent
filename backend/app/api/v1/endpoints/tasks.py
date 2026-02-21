@@ -26,7 +26,7 @@ async def create_task(
     # Process task (Analyze + Execute)
     orchestrator = OrchestratorAgent()
     try:
-        execution_result = await orchestrator.process_task(task_in.description, user_id)
+        execution_result = await orchestrator.process_task(task_in.description, user_id, service=task_in.service)
         analysis = execution_result.get("analysis", {})
         results = execution_result.get("results", [])
         

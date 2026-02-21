@@ -16,7 +16,7 @@ class OrchestratorAgent:
     def __init__(self):
         self.llm = LLMService()
     
-    async def process_task(self, task_description: str, user_id: str) -> Dict[str, Any]:
+    async def process_task(self, task_description: str, user_id: str, service: str = None) -> Dict[str, Any]:
         """
         Process user task end-to-end:
         1. Analyze with LLM to extract actions
@@ -24,10 +24,19 @@ class OrchestratorAgent:
         3. Return results
         """
         
-        logger.info(f"Processing task for user {user_id}: {task_description}")
+        logger.info(f"Processing task for user {user_id}: {task_description} (service: {service})")
         
-        # Step 1: Analyze task
-        analysis = self.llm.analyze_task(task_description)
+        # Extract service hint from "Using <service>: ..." prefix if not explicitly provided
+        service_hint = service
+        clean_description = task_description
+        if not service_hint and task_description.startswith("Using "):
+            parts = task_description.split(":", 1)
+            if len(parts) == 2:
+                service_hint = parts[0].replace("Using ", "").strip()
+                clean_description = parts[1].strip()
+        
+        # Step 1: Analyze task with service context
+        analysis = self.llm.analyze_task(clean_description, service_hint=service_hint)
         
         if not analysis.get('actions'):
             return {
@@ -35,6 +44,16 @@ class OrchestratorAgent:
                 "message": "Could not understand the task",
                 "results": []
             }
+        
+        logger.info(f"LLM analysis result: {analysis}")
+        
+        # Step 2: Post-LLM validation — force correct action type if service is known
+        if service_hint and service_hint in self.llm.SERVICE_ACTION_MAP:
+            expected_action = self.llm.SERVICE_ACTION_MAP[service_hint]
+            for action in analysis['actions']:
+                if action['type'] != expected_action:
+                    logger.warning(f"LLM returned '{action['type']}' but service is '{service_hint}', overriding to '{expected_action}'")
+                    action['type'] = expected_action
         
         
         results = []

@@ -303,6 +303,7 @@ const IntegrationPanel = ({
     onConnect,
     onRun,
     onClose,
+    onRunAnother,
     result,
     isRunning,
     isConnected,
@@ -476,12 +477,7 @@ const IntegrationPanel = ({
 
                             <div className="flex gap-3">
                                 <button
-                                    onClick={() => {
-                                        setPanelMode('task');
-                                        setAgentResult(null);
-                                        setAgentTaskInput('');
-                                        setAgentRunning(false);
-                                    }}
+                                    onClick={onRunAnother}
                                     className="flex-1 h-10 rounded-xl bg-white/[0.05] hover:bg-white/[0.08] text-white/70 text-sm font-medium transition-all"
                                 >
                                     Run another
@@ -636,29 +632,20 @@ export default function SetuLandingPage() {
                 'slack_connected': ['Slack'],
             };
 
-
-            const defaultServiceMap = {
-                'google_connected': 'Gmail',
-                'notion_connected': 'Notion',
-                'github_connected': 'GitHub',
-                'slack_connected': 'Slack',
-            };
-
             const connectedList = serviceMap[success] || [];
             setConnectedServices(prev => [...new Set([...prev, ...connectedList])]);
 
-
+            // Read the saved service from localStorage (set before OAuth redirect)
             const savedService = localStorage.getItem('setu_pending_service');
-            const serviceToOpen = savedService || defaultServiceMap[success];
-            if (serviceToOpen) {
-                setActiveIntegration(serviceToOpen);
+            console.log('[SETU OAuth] success:', success, 'savedService:', savedService);
+
+            if (savedService && SERVICE_CONFIG[savedService]) {
+                setActiveIntegration(savedService);
                 setPanelMode('task');
                 localStorage.removeItem('setu_pending_service');
             }
 
-
             loadIntegrations();
-
 
             setTimeout(() => window.history.replaceState({}, '', '/'), 100);
         }
@@ -768,9 +755,7 @@ export default function SetuLandingPage() {
         setAgentResult(null);
 
         try {
-            const fullTask = `Using ${activeIntegration}: ${agentTaskInput}`;
-
-            const response = await setuAPI.createTask(fullTask, 'high');
+            const response = await setuAPI.createTask(agentTaskInput, 'high', activeIntegration);
 
             if (response.status === 'completed') {
                 setAgentResult({
@@ -855,6 +840,12 @@ export default function SetuLandingPage() {
                     onConnect={handleOAuthConnect}
                     onRun={handleRunAgentTask}
                     onClose={handleClosePanel}
+                    onRunAnother={() => {
+                        setPanelMode('task');
+                        setAgentResult(null);
+                        setAgentTaskInput('');
+                        setAgentRunning(false);
+                    }}
                     result={agentResult}
                     isRunning={agentRunning}
                     isConnected={connectedServices.includes(activeIntegration)}

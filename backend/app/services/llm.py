@@ -3,6 +3,7 @@ from openai import OpenAI
 from app.core.config import settings
 import json
 import logging
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -22,14 +23,27 @@ class LLMService:
             except Exception as e:
                 logger.warning(f"OpenAI client init failed (using Groq as primary): {e}")
     
-    def analyze_task(self, description: str) -> dict:
+    # Maps frontend service names to the action types the LLM should use
+    SERVICE_ACTION_MAP = {
+        'Gmail': 'send_email',
+        'Google Calendar': 'create_calendar_event',
+        'Google Meet': 'create_calendar_event',
+        'Google Drive': 'create_google_doc',
+        'Google Docs': 'create_google_doc',
+        'Google Sheets': 'create_spreadsheet',
+        'Notion': 'create_notion_page',
+        'GitHub': 'create_github_issue',
+        'Slack': 'send_slack_message',
+    }
+
+    def analyze_task(self, description: str, service_hint: str = None) -> dict:
         
         system_prompt = """You are a task analyzer for an AI automation platform. 
         Extract actionable steps from user requests.
         
         Available actions:
         - send_email: {to, subject, body}
-        - create_calendar_event: {summary, start_time (ISO format), duration_minutes, attendees (list)}
+        - create_calendar_event: {summary, start_time (ISO format), duration_minutes, attendees (list), description}
         - create_notion_page: {title, content (markdown)}
         - create_github_issue: {repo, title, body}
         - send_slack_message: {channel, text}
@@ -46,8 +60,21 @@ class LLMService:
         For emails, write professional, concise messages based on the context.
         For calendar events, infer appropriate duration if not specified (default 60 minutes).
         """
+
+        # If a service hint is provided, add a strong constraint to the prompt
+        if service_hint:
+            required_action = self.SERVICE_ACTION_MAP.get(service_hint)
+            if required_action:
+                system_prompt += f"""
         
-        user_prompt = f"User request: {description}\n\nExtract actions:"
+        CRITICAL INSTRUCTION: The user has selected the "{service_hint}" service.
+        You MUST use the action type "{required_action}" for this task.
+        Do NOT use any other action type. The user explicitly chose {service_hint}.
+        """
+        
+        # Add current date/time context so the LLM generates correct dates
+        now = datetime.now()
+        user_prompt = f"Current date and time: {now.strftime('%Y-%m-%d %H:%M')} (timezone: Asia/Kolkata, IST)\n\nUser request: {description}\n\nExtract actions:"
         
         try:
             if self.groq_client:
@@ -90,6 +117,9 @@ class LLMService:
             
             return json.loads(content)
         
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse LLM JSON response: {e}\nContent: {content}")
+            return {"actions": [], "required_services": []}
         except Exception as e:
             logger.error(f"LLM analysis failed: {e}")
             return {"actions": [], "required_services": []}

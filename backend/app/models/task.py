@@ -20,7 +20,7 @@ class TaskBase(BaseModel):
     priority: TaskPriority = TaskPriority.MEDIUM
 
 class TaskCreate(TaskBase):
-    pass
+    service: Optional[str] = None
 
 class Task(TaskBase):
     id: str
