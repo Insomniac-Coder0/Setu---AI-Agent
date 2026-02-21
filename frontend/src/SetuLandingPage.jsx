@@ -930,7 +930,9 @@ export default function SetuLandingPage() {
 
 
                 <div className="hidden md:flex items-center gap-6">
-                    <a href="#" className="text-xs font-medium text-white/50 hover:text-white transition-colors flex items-center gap-1 group">
+                    <a href="#how-it-works" className="text-xs font-medium text-white/50 hover:text-white transition-colors flex items-center gap-1 group"
+                        onClick={(e) => { e.preventDefault(); document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' }); }}
+                    >
                         How it works
                         <ExternalLink size={10} className="group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-transform" />
                     </a>
@@ -1166,12 +1168,17 @@ export default function SetuLandingPage() {
                         Start Automating Free
                         <span className="group-hover:translate-x-1 transition-transform">→</span>
                     </button>
-                    <button className="flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/30 text-white font-medium px-8 py-4 rounded-lg transition-all w-full sm:w-auto min-w-[200px]">
+                    <a
+                        href="https://phase-feverfew-5ae.notion.site/SETU-AI-AGENT-WORKFLOW-AUTOMATION-PLATFORM-30b2ce28a6248017892ee3398517c8e8"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.08] text-white/90 text-sm font-medium transition-all border border-white/10"
+                    >
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-white/80">
                             <path d="M8 5V19L19 12L8 5Z" fill="currentColor" />
                         </svg>
                         Watch Demo
-                    </button>
+                    </a>
                 </div>
 
 
@@ -1200,7 +1207,7 @@ export default function SetuLandingPage() {
             </section>
 
 
-            <section className="relative z-10 max-w-6xl mx-auto px-6 pb-16">
+            <section id="how-it-works" className="relative z-10 max-w-6xl mx-auto px-6 pb-16 scroll-mt-20">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
 
 
@@ -1273,7 +1280,7 @@ export default function SetuLandingPage() {
                                 <div className="w-12 h-12 rounded-xl flex items-center justify-center border transition-all duration-500 bg-white/[0.04] border-white/15 text-white/70">
                                     <Volume2 size={20} />
                                 </div>
-                                <span className="text-[10px] font-medium text-white/70 whitespace-nowrap">Meeting Listener</span>
+                                <span className="text-[10px] font-medium text-white/70 whitespace-nowrap">One Prompt</span>
                             </div>
 
 
@@ -1281,7 +1288,7 @@ export default function SetuLandingPage() {
                                 <div className="w-12 h-12 rounded-xl flex items-center justify-center border transition-all duration-500 bg-white/[0.03] border-white/10 text-white/70">
                                     <ListChecks size={20} />
                                 </div>
-                                <span className="text-[10px] font-medium text-white/70 whitespace-nowrap">Task Extractor</span>
+                                <span className="text-[10px] font-medium text-white/70 text-center leading-tight">Multi-Agent<br />Execution</span>
                             </div>
 
 
