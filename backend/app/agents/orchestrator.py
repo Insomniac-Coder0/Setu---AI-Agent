@@ -181,10 +181,16 @@ class OrchestratorAgent:
         # DISCORD
         elif action_type == 'send_discord_message':
             discord = DiscordService()
-            return await discord.send_message(
-                channel_id=params.get('channel_id', ''),
-                content=params.get('content', params.get('message', ''))
-            )
+            # LLM may return Slack-style params (channel/text), accept both formats
+            content = params.get('content') or params.get('text') or params.get('message', '')
+            channel_id = params.get('channel_id', '')
+            
+            if channel_id and channel_id.isdigit():
+                # Use bot API with numeric channel ID
+                return await discord.send_message(channel_id=channel_id, content=content)
+            else:
+                # No valid channel ID — use webhook fallback
+                return await discord.send_webhook_message(content=content)
         
         else:
             raise Exception(f"Unknown action type: {action_type}")
