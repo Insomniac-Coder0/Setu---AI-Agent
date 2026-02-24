@@ -8,6 +8,11 @@ from app.core.database import save_user_credentials
 import httpx
 import secrets
 import base64
+import os
+
+def _get_frontend_url() -> str:
+    """Get the frontend URL for OAuth redirects."""
+    return os.getenv("FRONTEND_URL", "http://localhost:5173")
 
 router = APIRouter()
 
@@ -71,8 +76,7 @@ async def callback_google(code: str, state: str):
     )
     
     # Redirect back to frontend
-    frontend_url = settings.BACKEND_CORS_ORIGINS[0] if settings.BACKEND_CORS_ORIGINS else "http://localhost:5173"
-    return RedirectResponse(url=f"{frontend_url}?success=google_connected")
+    return RedirectResponse(url=f"{_get_frontend_url()}?success=google_connected")
 
 @router.get("/notion/login")
 async def login_notion(current_user: dict = Depends(deps.get_current_user)):
@@ -127,8 +131,7 @@ async def callback_notion(code: str, state: str):
         scopes=["read", "write"]
     )
     
-    frontend_url = settings.BACKEND_CORS_ORIGINS[0] if settings.BACKEND_CORS_ORIGINS else "http://localhost:5173"
-    return RedirectResponse(url=f"{frontend_url}?success=notion_connected")
+    return RedirectResponse(url=f"{_get_frontend_url()}?success=notion_connected")
 
 @router.get("/github/login")
 async def login_github(current_user: dict = Depends(deps.get_current_user)):
@@ -173,8 +176,7 @@ async def callback_github(code: str, state: str):
         scopes=["repo", "user"]
     )
     
-    frontend_url = settings.BACKEND_CORS_ORIGINS[0] if settings.BACKEND_CORS_ORIGINS else "http://localhost:5173"
-    return RedirectResponse(url=f"{frontend_url}?success=github_connected")
+    return RedirectResponse(url=f"{_get_frontend_url()}?success=github_connected")
 
 @router.get("/slack/login")
 async def login_slack(current_user: dict = Depends(deps.get_current_user)):
@@ -222,5 +224,4 @@ async def callback_slack(code: str, state: str):
         scopes=["chat:write", "commands"]
     )
     
-    frontend_url = settings.BACKEND_CORS_ORIGINS[0] if settings.BACKEND_CORS_ORIGINS else "http://localhost:5173"
-    return RedirectResponse(url=f"{frontend_url}?success=slack_connected")
+    return RedirectResponse(url=f"{_get_frontend_url()}?success=slack_connected")
