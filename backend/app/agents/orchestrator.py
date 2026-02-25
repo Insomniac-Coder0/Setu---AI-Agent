@@ -93,9 +93,13 @@ class OrchestratorAgent:
             if not creds:
                 raise Exception("Google account not connected")
             
+            to = params.get('to')
+            if not to:
+                raise Exception("No recipient email address specified. Please include a 'to' address.")
+            
             gmail = GmailService(creds['access_token'], creds.get('refresh_token'))
             return gmail.send_email(
-                to=params['to'],
+                to=to,
                 subject=params.get('subject', 'No Subject'),
                 body=params.get('body', ''),
                 cc=params.get('cc')
@@ -107,10 +111,15 @@ class OrchestratorAgent:
             if not creds:
                 raise Exception("Google account not connected")
             
+            summary = params.get('summary', params.get('title', 'Untitled Event'))
+            start_time = params.get('start_time')
+            if not start_time:
+                raise Exception("No start time specified for the calendar event.")
+            
             calendar = CalendarService(creds['access_token'], creds.get('refresh_token'))
             return calendar.create_event(
-                summary=params['summary'],
-                start_time=params['start_time'],
+                summary=summary,
+                start_time=start_time,
                 duration_minutes=params.get('duration_minutes', 60),
                 attendees=params.get('attendees'),
                 description=params.get('description', '')
@@ -124,7 +133,7 @@ class OrchestratorAgent:
             
             docs = DocsService(creds['access_token'], creds.get('refresh_token'))
             return docs.create_document(
-                title=params['title'],
+                title=params.get('title', 'Untitled Document'),
                 content=params.get('content', '')
             )
         
@@ -136,7 +145,7 @@ class OrchestratorAgent:
             
             sheets = SheetsService(creds['access_token'], creds.get('refresh_token'))
             return sheets.create_spreadsheet(
-                title=params['title'],
+                title=params.get('title', 'Untitled Spreadsheet'),
                 data=params.get('data')
             )
         
@@ -158,10 +167,14 @@ class OrchestratorAgent:
             if not creds:
                 raise Exception("GitHub account not connected")
             
+            repo = params.get('repo')
+            if not repo:
+                raise Exception("No repository specified. Use format: owner/repo")
+            
             github = GitHubService(creds['access_token'])
             return github.create_issue(
-                repo=params['repo'],
-                title=params['title'],
+                repo=repo,
+                title=params.get('title', 'Untitled Issue'),
                 body=params.get('body', ''),
                 labels=params.get('labels')
             )

@@ -43,10 +43,16 @@ class CalendarService:
             else:
                 start_dt = start_time
             
-            # If the parsed date has no year or is in the past, assume current/next year
+            # If the parsed date is in the past, adjust to the next occurrence
             now = datetime.now()
-            if start_dt.year < now.year:
-                start_dt = start_dt.replace(year=now.year)
+            if start_dt < now:
+                # If only the day has passed this month/year, try next year
+                try:
+                    start_dt = start_dt.replace(year=now.year + 1)
+                except ValueError:
+                    # Handle Feb 29 edge case
+                    start_dt = start_dt.replace(year=now.year + 1, day=28)
+                logger.info(f"Adjusted past date to future: {start_dt.isoformat()}")
             
             end_dt = start_dt + timedelta(minutes=duration_minutes)
             
