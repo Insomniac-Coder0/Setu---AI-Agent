@@ -173,7 +173,6 @@ const SERVICE_CONFIG = {
         description: 'Create events, reminders, meetings',
         oauthType: 'google',
         examples: [
-            'Set reminder March 20 at 2pm for team standup',
             'Schedule meeting tomorrow at 3pm with john@test.com',
             'Create weekly sync every Monday at 10am',
         ],
